@@ -17,19 +17,18 @@ searchBtn.addEventListener("click", () => {
 
   showFeedback("🔍 Buscando cartas nas APIs...");
 
-  // 1️⃣ Buscar na API oficial
+  // 1️⃣ API oficial
   const officialFetch = fetch(`${API_URL_OFFICIAL}/cards?q=name:${name}`)
     .then(res => res.json())
     .then(data => data.data || [])
     .catch(() => []);
 
-  // 2️⃣ Buscar na TCGdex
+  // 2️⃣ TCGdex
   const tcgdexFetch = fetch(`${API_URL_TCGDEX}/cards?search=${name}`)
     .then(res => res.json())
     .then(data => data.data || [])
     .catch(() => []);
 
-  // 3️⃣ Quando ambos retornarem, mostrar os resultados
   Promise.all([officialFetch, tcgdexFetch])
     .then(([officialCards, tcgdexCards]) => {
       if (officialCards.length === 0 && tcgdexCards.length === 0) {
@@ -39,19 +38,24 @@ searchBtn.addEventListener("click", () => {
         showFeedback(
           `Cartas encontradas — Oficial: ${officialCards.length}, TCGdex: ${tcgdexCards.length}`
         );
-        showCards([...officialCards, ...tcgdexCards]);
+        showCards(officialCards, "official");
+        showCards(tcgdexCards, "tcgdex");
       }
     });
 });
 
-// Funções auxiliares
-function showCards(cards) {
-  cardsContainer.innerHTML = "";
+// Mostrar cartas com tag de origem
+function showCards(cards, source) {
   cards.forEach(card => {
     const div = document.createElement("div");
     div.classList.add("card");
+
+    // Pega a imagem (diferença entre APIs)
+    const imgSrc = card.images?.small || card.image || "";
+
     div.innerHTML = `
-      <img src="${card.images?.small || card.image}" alt="${card.name}">
+      <span class="source source-${source}">${source.toUpperCase()}</span>
+      <img src="${imgSrc}" alt="${card.name}">
       <h3>${card.name}</h3>
       <p><b>Raridade:</b> ${card.rarity || "Desconhecida"}</p>
       <p><b>Tipo:</b> ${card.types ? card.types.join(", ") : "N/A"}</p>
@@ -86,7 +90,7 @@ function loadRandomCards() {
     .then(res => res.json())
     .then(data => {
       showFeedback("");
-      showCards(data.data);
+      showCards(data.data, "official");
     })
     .catch(() => showFeedback("Erro ao carregar cartas."));
 }
