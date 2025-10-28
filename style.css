@@ -3,6 +3,8 @@
   --secondary: #3b4cca;
   --bg: #f7f7f7;
   --text: #333;
+  --tcgdex: #ff6b6b;
+  --official: #3b4cca;
 }
 
 * {
@@ -85,6 +87,7 @@ h1 {
   text-align: center;
   padding: 1rem;
   transition: transform 0.2s;
+  position: relative;
 }
 
 .card:hover {
@@ -106,11 +109,24 @@ h1 {
   font-size: 0.9rem;
 }
 
-.card-gifs img {
-  display: inline-block;
-  margin: 2px;
-  border-radius: 6px;
-  width: 100px;
+/* Tag de origem da carta */
+.card .source {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.7rem;
+  color: white;
+  font-weight: bold;
+}
+
+.source-official {
+  background: var(--official);
+}
+
+.source-tcgdex {
+  background: var(--tcgdex);
 }
 
 .sets-section {
