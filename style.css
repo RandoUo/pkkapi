@@ -106,6 +106,13 @@ h1 {
   font-size: 0.9rem;
 }
 
+.card-gifs img {
+  display: inline-block;
+  margin: 2px;
+  border-radius: 6px;
+  width: 100px;
+}
+
 .sets-section {
   background: #fff;
   padding: 1rem;
