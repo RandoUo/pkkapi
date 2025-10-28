@@ -1,12 +1,13 @@
 const API_URL = "https://api.pokemontcg.io/v2";
-const GIPHY_URL = "https://api.giphy.com/v1/gifs/search?api_key=dc6zaTOxFJmzC&limit=1&q="; // Public Beta
+const GIPHY_URL = "https://api.giphy.com/v1/gifs/search?api_key=dc6zaTOxFJmzC&limit=10&q=";
+
 const cardsContainer = document.getElementById("cards");
 const setList = document.getElementById("setList");
 const feedback = document.getElementById("feedback");
 const searchBtn = document.getElementById("searchBtn");
 const searchInput = document.getElementById("searchInput");
 
-// Evento de busca por nome
+// Evento de busca
 searchBtn.addEventListener("click", () => {
   const name = searchInput.value.trim();
   if (!name) {
@@ -55,36 +56,47 @@ function loadRandomCards() {
     .catch(() => showFeedback("Erro ao carregar cartas."));
 }
 
-// Função para mostrar cartas + GIF
+// Função para mostrar cartas + todos os GIFs
 function showCards(cards) {
   cardsContainer.innerHTML = "";
+
   cards.forEach(card => {
     const div = document.createElement("div");
     div.classList.add("card");
 
-    // Busca GIF da carta pelo nome do Pokémon
-    fetch(`${GIPHY_URL}${encodeURIComponent(card.name)}`)
+    // Info básica
+    div.innerHTML = `
+      <h3>${card.name}</h3>
+      <p><b>Raridade:</b> ${card.rarity || "Desconhecida"}</p>
+      <p><b>Tipo:</b> ${card.types ? card.types.join(", ") : "N/A"}</p>
+      <div class="card-images">
+        <img src="${card.images.small}" alt="${card.name}">
+      </div>
+      <div class="card-gifs">
+        <p>GIFs:</p>
+      </div>
+    `;
+    cardsContainer.appendChild(div);
+
+    const gifContainer = div.querySelector(".card-gifs");
+
+    // Buscar todos os GIFs do Pokémon
+    fetch(`${GIPHY_URL}${encodeURIComponent(card.name + " pokemon")}`)
       .then(res => res.json())
       .then(gifData => {
-        const gifUrl = gifData.data[0]?.images?.downsized_medium?.url || card.images.small;
-
-        div.innerHTML = `
-          <img src="${gifUrl}" alt="${card.name}">
-          <h3>${card.name}</h3>
-          <p><b>Raridade:</b> ${card.rarity || "Desconhecida"}</p>
-          <p><b>Tipo:</b> ${card.types ? card.types.join(", ") : "N/A"}</p>
-        `;
-        cardsContainer.appendChild(div);
+        if (gifData.data.length === 0) {
+          gifContainer.innerHTML += `<p>Nenhum GIF encontrado.</p>`;
+          return;
+        }
+        gifData.data.forEach(gif => {
+          const img = document.createElement("img");
+          img.src = gif.images.fixed_height.url;
+          img.alt = card.name;
+          gifContainer.appendChild(img);
+        });
       })
       .catch(() => {
-        // Caso o GIF não carregue, usa a imagem da carta
-        div.innerHTML = `
-          <img src="${card.images.small}" alt="${card.name}">
-          <h3>${card.name}</h3>
-          <p><b>Raridade:</b> ${card.rarity || "Desconhecida"}</p>
-          <p><b>Tipo:</b> ${card.types ? card.types.join(", ") : "N/A"}</p>
-        `;
-        cardsContainer.appendChild(div);
+        gifContainer.innerHTML += `<p>Erro ao carregar GIFs.</p>`;
       });
   });
 }
